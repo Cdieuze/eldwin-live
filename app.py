@@ -1,6 +1,6 @@
 # app.py
 # ==========================================
-# Eldwin – Market Mood (Clean Final UI)
+# Eldwin – Market Mood (Centered / No Scroll)
 # ==========================================
 
 import streamlit as st
@@ -20,42 +20,38 @@ st.set_page_config(
 )
 
 # ------------------------------------------
-# FORCE LIGHT THEME + CLEAN UI
+# HARD RESET UI (WHITE ONLY, NO SCROLL)
 # ------------------------------------------
 
 st.markdown(
     """
     <style>
-    html, body, [class*="css"]  {
+    html, body, [data-testid="stApp"] {
         background-color: #ffffff !important;
         color: #000000 !important;
+        height: 100%;
+        overflow: hidden;
     }
 
     #MainMenu, footer, header {
         visibility: hidden;
     }
 
+    /* Center everything vertically */
     .block-container {
         max-width: 420px;
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
-
-    /* Orb container */
-    .orb-wrapper {
-        width: 260px;
-        height: 260px;
-        margin: auto;
-        border-radius: 50%;
-        overflow: hidden;
-        background: #ffffff;
+        height: 100vh;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 50%;
+        width: 220px;
+        height: auto;
+        margin: auto;
+        border-radius: 0 !important;
     }
     </style>
     """,
@@ -63,10 +59,10 @@ st.markdown(
 )
 
 # ------------------------------------------
-# AUTO REFRESH
+# AUTO REFRESH (1 MINUTE)
 # ------------------------------------------
 
-REFRESH_SECONDS = 15
+REFRESH_SECONDS = 60
 st_autorefresh(interval=REFRESH_SECONDS * 1000, key="eldwin_refresh")
 
 # ------------------------------------------
@@ -78,7 +74,7 @@ score = safe_float(result.get("score", 50.0), 50.0)
 media_path = score_to_media(score)
 
 # ------------------------------------------
-# DYNAMIC TEXT LOGIC
+# DYNAMIC TEXTS
 # ------------------------------------------
 
 if score < 20:
@@ -98,16 +94,16 @@ else:
     mood_sub = "Extreme stress conditions"
 
 # ------------------------------------------
-# TOP STATIC TEXT
+# CONTENT (COMPACT & CENTERED)
 # ------------------------------------------
 
 st.markdown(
     """
     <div style="text-align:center;">
-        <div style="font-size:26px; font-weight:500;">
+        <div style="font-size:24px; font-weight:400;">
             Eldwin
         </div>
-        <div style="margin-top:6px; font-size:13px; color:#6b6b6b;">
+        <div style="margin-top:4px; font-size:12px; color:#7a7a7a;">
             <span style="color:#9BCB7A;">●</span>
             Market mood · Live
         </div>
@@ -116,29 +112,19 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown("<div style='height:30px'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
-# ------------------------------------------
-# ORB VIDEO (CIRCULAR, CLEAN)
-# ------------------------------------------
-
-st.markdown("<div class='orb-wrapper'>", unsafe_allow_html=True)
 st.video(media_path, autoplay=True, loop=True)
-st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("<div style='height:30px'></div>", unsafe_allow_html=True)
-
-# ------------------------------------------
-# BOTTOM DYNAMIC TEXTS (SAFE HTML)
-# ------------------------------------------
+st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
 st.markdown(
     f"""
     <div style="text-align:center;">
-        <div style="font-size:18px; font-weight:500;">
+        <div style="font-size:16px; font-weight:400;">
             {mood_title}
         </div>
-        <div style="margin-top:6px; font-size:13px; color:#7a7a7a;">
+        <div style="margin-top:4px; font-size:12px; color:#7a7a7a;">
             {mood_sub}
         </div>
     </div>
@@ -146,24 +132,20 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
-
-# ------------------------------------------
-# INDEX PILL
-# ------------------------------------------
+st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
 st.markdown(
     f"""
     <div style="text-align:center;">
         <span style="
             display:inline-block;
-            padding:10px 18px;
-            background:#f3f3f3;
+            padding:8px 16px;
+            background:#f6f1ec;
             border-radius:999px;
-            font-size:13px;
+            font-size:12px;
             color:#555;
         ">
-            Eldwin Index {score:.0f}/100
+            Eldwin Index {int(score)} / 100
         </span>
     </div>
     """,
