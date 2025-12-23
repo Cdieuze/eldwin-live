@@ -1,6 +1,6 @@
 # app.py
 # ==========================================
-# Eldwin Live – Full Screen Visual App
+# Eldwin – Market Mood (Final UI)
 # ==========================================
 
 import streamlit as st
@@ -9,46 +9,61 @@ from streamlit_autorefresh import st_autorefresh
 from utils import (
     compute_eldwin_score,
     safe_float,
-    score_to_label,
-    score_to_color,
     score_to_media,
 )
 
 # ------------------------------------------
-# PAGE CONFIG (FULL SCREEN / CLEAN)
+# PAGE CONFIG
 # ------------------------------------------
 
 st.set_page_config(
-    page_title="Eldwin Live",
-    page_icon="🟣",
+    page_title="Eldwin",
+    page_icon="🟢",
     layout="centered",
     initial_sidebar_state="collapsed",
 )
 
 # ------------------------------------------
-# AUTO REFRESH (every 15s)
+# AUTO REFRESH
 # ------------------------------------------
 
 REFRESH_SECONDS = 15
 st_autorefresh(interval=REFRESH_SECONDS * 1000, key="eldwin_refresh")
 
 # ------------------------------------------
-# COMPUTE SCORE (LIVE with fallback)
+# COMPUTE SCORE
 # ------------------------------------------
 
 result = compute_eldwin_score(
     lookback_days=60,
-    use_demo=False,   # auto fallback if live fails
+    use_demo=False,
 )
 
 score = safe_float(result.get("score", 50.0), 50.0)
-label = score_to_label(score)
-color = score_to_color(score)
 media_path = score_to_media(score)
-mode = result.get("mode", "unknown")
 
 # ------------------------------------------
-# HIDE STREAMLIT UI (MAX IMMERSION)
+# TEXT LOGIC (DYNAMIC BOTTOM TEXTS)
+# ------------------------------------------
+
+if score < 20:
+    mood_title = "Markets are calm."
+    mood_sub = "Low stress environment"
+elif score < 40:
+    mood_title = "Markets are stable."
+    mood_sub = "Normal risk conditions"
+elif score < 60:
+    mood_title = "Markets are tense."
+    mood_sub = "Rising uncertainty"
+elif score < 80:
+    mood_title = "Markets are stressed."
+    mood_sub = "High risk environment"
+else:
+    mood_title = "Markets are under pressure."
+    mood_sub = "Extreme stress conditions"
+
+# ------------------------------------------
+# HIDE STREAMLIT UI
 # ------------------------------------------
 
 st.markdown(
@@ -58,8 +73,12 @@ st.markdown(
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .block-container {
-        padding-top: 1rem;
-        padding-bottom: 1rem;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        max-width: 420px;
+    }
+    video {
+        border-radius: 50%;
     }
     </style>
     """,
@@ -67,7 +86,33 @@ st.markdown(
 )
 
 # ------------------------------------------
-# MAIN VISUAL (ANIMATION)
+# TOP STATIC TEXTS
+# ------------------------------------------
+
+st.markdown(
+    """
+    <div style="text-align:center;">
+        <div style="font-size:26px; font-weight:500;">
+            Eldwin
+        </div>
+
+        <div style="
+            margin-top:6px;
+            font-size:13px;
+            color:#6b6b6b;
+        ">
+            <span style="color:#9BCB7A;">●</span>
+            Market mood · Live
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown("<div style='height:30px'></div>", unsafe_allow_html=True)
+
+# ------------------------------------------
+# ORB (VIDEO – DYNAMIC)
 # ------------------------------------------
 
 st.video(
@@ -76,55 +121,53 @@ st.video(
     loop=True,
 )
 
+st.markdown("<div style='height:30px'></div>", unsafe_allow_html=True)
+
 # ------------------------------------------
-# SCORE DISPLAY
+# BOTTOM DYNAMIC TEXTS
 # ------------------------------------------
 
 st.markdown(
     f"""
-    <div style="text-align:center; margin-top: -10px;">
+    <div style="text-align:center;">
         <div style="
-            font-size: 56px;
-            font-weight: 900;
-            color: {color};
-            line-height: 1;
+            font-size:18px;
+            font-weight:500;
         ">
-            {score:.1f}
+            {mood_title}
         </div>
 
         <div style="
-            font-size: 16px;
-            margin-top: 6px;
-            opacity: 0.9;
+            margin-top:6px;
+            font-size:13px;
+            color:#7a7a7a;
         ">
-            {label}
-        </div>
-
-        <div style="
-            font-size: 11px;
-            margin-top: 10px;
-            opacity: 0.5;
-        ">
-            auto-refresh {REFRESH_SECONDS}s · mode: {mode}
+            {mood_sub}
         </div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
+st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+
 # ------------------------------------------
-# OPTIONAL: DISCLAIMER (VERY LIGHT)
+# INDEX PILL (DYNAMIC)
 # ------------------------------------------
 
 st.markdown(
-    """
-    <div style="
-        text-align:center;
-        font-size:10px;
-        opacity:0.35;
-        margin-top:12px;
-    ">
-        Experimental market stress signal · Not investment advice
+    f"""
+    <div style="text-align:center;">
+        <span style="
+            display:inline-block;
+            padding:10px 18px;
+            background:#f3f3f3;
+            border-radius:999px;
+            font-size:13px;
+            color:#555;
+        ">
+            Eldwin Index&nbsp;&nbsp;{score:.0f}/100
+        </span>
     </div>
     """,
     unsafe_allow_html=True,
