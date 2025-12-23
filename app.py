@@ -1,9 +1,12 @@
 # app.py
 # ==================================================
-# Eldwin – Market Mood (FINAL / HTML STABLE)
+# Eldwin – Market Mood (FINAL – Stable & Correct)
 # ==================================================
 
 import time
+import base64
+from pathlib import Path
+
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 import streamlit.components.v1 as components
@@ -34,8 +37,15 @@ st_autorefresh(interval=REFRESH_SECONDS * 1000, key="eldwin_refresh")
 
 result = compute_eldwin_score(lookback_days=60, use_demo=False)
 score = safe_float(result.get("score", 50.0), 50.0)
-media_path = score_to_media(score)
+media_file = score_to_media(score)
 updated_seconds = int(time.time() - result.get("timestamp", time.time()))
+
+# --------------------------------------------------
+# LOAD VIDEO AS BASE64 (CRITICAL FIX)
+# --------------------------------------------------
+
+video_bytes = Path(media_file).read_bytes()
+video_base64 = base64.b64encode(video_bytes).decode("utf-8")
 
 # --------------------------------------------------
 # TEXT LOGIC
@@ -44,7 +54,7 @@ updated_seconds = int(time.time() - result.get("timestamp", time.time()))
 if score < 20:
     mood_title = "Markets appear unusually calm."
     mood_sub = "Very low stress environment"
-    mood_color = "#7FBF7F"
+    mood_color = "#6FBF8A"
 elif score < 40:
     mood_title = "Markets are stable."
     mood_sub = "Normal risk conditions"
@@ -63,7 +73,7 @@ else:
     mood_color = "#D96A6A"
 
 # --------------------------------------------------
-# PURE HTML RENDER (NO STREAMLIT MARKDOWN)
+# PURE HTML (FULL PAGE, NO CARD)
 # --------------------------------------------------
 
 html = f"""
@@ -74,39 +84,37 @@ html = f"""
 html, body {{
     margin: 0;
     padding: 0;
+    width: 100%;
+    height: 100%;
     background: #ffffff;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }}
 
 .container {{
-    width: 100%;
     height: 100vh;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-}}
-
-.card {{
-    width: 360px;
     text-align: center;
 }}
 
 .title {{
-    font-size: 30px;
+    font-size: 36px;
     font-weight: 500;
     color: #4A6FA5;
 }}
 
 .subtitle {{
     margin-top: 6px;
-    font-size: 13px;
+    font-size: 14px;
     color: #6f6f6f;
 }}
 
 .live-dot {{
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 9px;
+    height: 9px;
     background: #4CAF50;
     border-radius: 50%;
     margin-left: 6px;
@@ -120,40 +128,39 @@ html, body {{
 }}
 
 .orb {{
-    margin: 28px auto;
+    margin: 36px 0;
 }}
 
 .orb video {{
-    width: 260px;
+    width: 300px;
     border-radius: 50%;
     object-fit: cover;
 }}
 
 .mood {{
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 500;
     color: {mood_color};
 }}
 
 .sub {{
     margin-top: 6px;
-    font-size: 14px;
+    font-size: 16px;
     color: #7a7a7a;
 }}
 
 .pill {{
-    display: inline-block;
-    margin-top: 18px;
-    padding: 12px 22px;
+    margin-top: 22px;
+    padding: 14px 26px;
     background: #EEF4FA;
     border-radius: 999px;
-    font-size: 15px;
+    font-size: 16px;
     color: #355C7D;
 }}
 
 .footer {{
-    margin-top: 20px;
-    font-size: 11px;
+    margin-top: 24px;
+    font-size: 12px;
     color: #9a9a9a;
 }}
 </style>
@@ -161,33 +168,30 @@ html, body {{
 
 <body>
 <div class="container">
-    <div class="card">
 
-        <div class="title">Eldwin</div>
-
-        <div class="subtitle">
-            Market mood · Live <span class="live-dot"></span>
-        </div>
-
-        <div class="orb">
-            <video autoplay muted loop playsinline>
-                <source src="{media_path}" type="video/webm">
-            </video>
-        </div>
-
-        <div class="mood">{mood_title}</div>
-        <div class="sub">{mood_sub}</div>
-
-        <div class="pill">Eldwin Index · {int(score)} / 100</div>
-
-        <div class="footer">
-            Live data — Europe session · Updated {updated_seconds}s ago
-        </div>
-
+    <div class="title">Eldwin</div>
+    <div class="subtitle">
+        Market mood · Live <span class="live-dot"></span>
     </div>
+
+    <div class="orb">
+        <video autoplay muted loop playsinline>
+            <source src="data:video/webm;base64,{video_base64}" type="video/webm">
+        </video>
+    </div>
+
+    <div class="mood">{mood_title}</div>
+    <div class="sub">{mood_sub}</div>
+
+    <div class="pill">Eldwin Index · {int(score)} / 100</div>
+
+    <div class="footer">
+        Live data — Europe session · Updated {updated_seconds}s ago
+    </div>
+
 </div>
 </body>
 </html>
 """
 
-components.html(html, height=700)
+components.html(html, height=900)
